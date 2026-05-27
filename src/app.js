@@ -6,22 +6,6 @@ const app = express()
 app.use(express.json())
 
 
-app.get('/api', (req,res)=> {
-    res.send('API funcionando')
-})
-
-app.get('/api/pedidos/:id', async (req, res) => {
-    try {
-        const pedido = await pedidoService.buscarPorId(req.params.id);
-        res.json(pedido);
-    } catch (err) {
-        console.log(err);
-        res.status(err.status || 500).json({
-            erro: err.msg || 'Erro interno ao servidor'
-        });
-    }
-});
-
 // Inserir Pedido
 
 
