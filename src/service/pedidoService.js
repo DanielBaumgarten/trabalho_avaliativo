@@ -1,59 +1,92 @@
-let pedido = [];
-let idAtual = 1;
+const validador = require('./validadores');
 
+let pedidos = [];
+let contador = 1;
 
-async function listar() {
+async function inserir(dados) {
+
+    validador.validarPedido(dados);
+
+    const pedido = {
+        codigo: contador++,
+        dataHora: new Date(),
+        clienteCpf: dados.clienteCpf,
+        clienteNome: dados.clienteNome,
+        produtoNome: dados.produtoNome,
+        produtoPreco: dados.produtoPreco,
+        situacao: 'aberto'
+    };
+
+    pedidos.push(pedido);
+
     return pedido;
-} 
+}
 
-async function buscarPorId(id) {
-    const pedido = pedido.find(p => p.id == id);
+async function listar(situacao) {
 
-    if(!pedido) {
-        throw {id: 404, msg: "pedido não encontrado"}
+    if (!situacao) {
+        return pedidos;
+    }
+
+    validador.validarSituacao(situacao);
+
+    return pedidos.filter(p => p.situacao === situacao);
+}
+
+async function buscarPorId(codigo) {
+
+    codigo = Number(codigo);
+
+    if (isNaN(codigo)) {
+        throw {
+            status: 400,
+            msg: 'Código inválido'
+        };
+    }
+
+    const pedido = pedidos.find(p => p.codigo === codigo);
+
+    if (!pedido) {
+        throw {
+            status: 404,
+            msg: 'Pedido não encontrado'
+        };
     }
 
     return pedido;
 }
 
-async function inserir(pedido) {
-    if (!pedido.clienteNome || !pedido.prdutoNome || !pedido.produtoPreco) {
-        throw {id: 400, msg: "Dados inválidos"};
-    }
+async function atualizarSituacao(codigo, situacao) {
 
+    const pedido = await buscarPorId(codigo);
 
-    pedido.id = idAtual++;
-    pedido.push(pedido);
+    validador.validarSituacao(situacao);
 
-    return pedido;
-
-}
- 
-async function atualizar(id, dados) {
-    const pedido = await buscarPorId(id);
-
-    pedido.clienteNome = dados.clienteNome ?? pedido.clienteNome;
-    pedido.prdutoNome = dados.prdutoNome ?? pedido.prdutoNome;
-    pedido.produtoPreco = dados.produtoPreco ?? pedido.produtoPreco;
+    pedido.situacao = situacao;
 
     return pedido;
 }
 
-async function deletar(id) {
-    const index = pedido.findIndex(p => p.id ==id);
+async function deletar(codigo) {
 
-    if (index === -1){
-        throw{ id: 404, msg: "pedido não encontrado"}
+    codigo = Number(codigo);
+
+    const index = pedidos.findIndex(p => p.codigo === codigo);
+
+    if (index === -1) {
+        throw {
+            status: 404,
+            msg: 'Pedido não encontrado'
+        };
     }
 
-    pedido.splice(index, 1);
+    pedidos.splice(index, 1);
 }
 
 module.exports = {
+    inserir,
     listar,
     buscarPorId,
-    inserir,
-    atualizar,
+    atualizarSituacao,
     deletar
 };
-
