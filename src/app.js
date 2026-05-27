@@ -5,6 +5,7 @@ const app = express()
 
 app.use(express.json())
 
+
 app.get('/api', (req,res)=> {
     res.send('API funcionando')
 })
@@ -16,10 +17,13 @@ app.get('/api/pedidos/:id', async (req, res) => {
     } catch (err) {
         console.log(err);
         res.status(err.status || 500).json({
-            erro: err.msg || "Erro interno ao servidor"
+            erro: err.msg || 'Erro interno ao servidor'
         });
     }
 });
+
+// Inserir Pedido
+
 
 app.post('/api/pedidos', async (req,res) => {
     try {
@@ -29,32 +33,65 @@ app.post('/api/pedidos', async (req,res) => {
         console.log(err); // ajuda a ver o erro no terminal
 
         res.status(err.id || 500).json({
-            erro: err.msg || "Erro interno do servidor"
+            erro: err.msg || 'Erro interno do servidor'
         });    
     }
 });
 
+// Listar Pedidos
 
-app.put('/api/pedidos/:id', async (req, res) => {
+app.get('/api/pedidos', async (req,res) => {
     try {
-        const pedido = await pedidoService.atualizar(req.params.id, req.body);
-        res.json(pedido);
+        const pedidos = await pedidoService.listar(req.query.situacao);
+        res.json(pedidos);
     } catch (err) {
-        console.log(err);
         res.status(err.status || 500).json({
-            erro: err.msg || "Erro interno do servidor"
-        });
+            erro: err.msg || 'Erro interno do Servidor'
+        })
     }
 });
 
-app.delete('/api/pedidos/:id', async (req, res) => {
+// Buscar por ID
+
+app.put('/api/pedidos/:codigo', async (req, res) => {
     try {
-        await pedidoService.deletar(req.params.id);
+        const pedido = await pedidoService.buscaPorId(req.params.codigo);
+        res.json(pedido);
+    } catch (err) {
+        res.status(err.status || 500).json({
+            erro: err.msg || 'Erro interno do servidor'
+        })
+    }
+});
+
+
+// Atualizar situação
+
+app.put('/api/pedidos/:codigo', async (req,res) => {
+    try {
+        const pedido = await pedidoService.atualizarSituacao(
+            req.params.codigo,
+            req.body.situacao
+        );
+    res.json(pedido);
+    } catch (err){
+        res.status(err.status || 500).json({
+            erro: err.msg || 'Erro interno do servidor'
+        })
+    }
+});
+
+
+// Deletar Pedido
+
+app.delete('/api/pedidos/:codigo', async (req,res) => {
+    try {
+        await pedidoService.deletar(req.params.codigo);
+
         res.status(204).send();
     } catch (err) {
-        console.log(err);
         res.status(err.status || 500).json({
-            erro: err.msg || "Erro interno do servidor"
+        erro: err.msg || 'Erro interno do servidor'
         });
     }
 });
